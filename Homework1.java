@@ -1,3 +1,5 @@
+//@author Rachel Matthews
+
 import java.util.Scanner;
 
 public class Homework1{
@@ -182,8 +184,6 @@ public class Homework1{
 
 class AddFactory{
 
-	//deleteCharAt()
-
 	private StringBuilder num;
 
 	public AddFactory(){
@@ -195,7 +195,6 @@ class AddFactory{
 	}
 
 	public void add(String other){
-		//StringBuilder other = new StringBuilder(addThis);
 
 		int shortest = other.length();
 
