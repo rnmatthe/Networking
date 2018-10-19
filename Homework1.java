@@ -1,6 +1,7 @@
 //@author Rachel Matthews
 
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Homework1{
 	
@@ -72,25 +73,146 @@ public class Homework1{
 
 	}
 
-	private static String sendChecksum(String message){
-		AddFactory addFactory = new AddFactory(message);
-		System.out.println("What would you like to add to it? ");
-		addFactory.add(input.next());
-		System.out.println("after adding: " + addFactory.getNum());
 
-		return "";
+
+	private static String sendChecksum(String message){
+
+		String result = addGroups(message);
+
+		return message + flipBits(result);
 	}
 
 	private static String receiveChecksum(String message){
-		return "";
+		
+		String result = addGroups(message);
+
+		if( isZero( flipBits(result) ) ){
+			System.out.println("Received message in error");
+		} else {
+			System.out.println("Correct message");
+		}
+
+		return "Computed checksum: " + result;
 	}
 
 	private static String sendHamming(String message){
-		return "";
+
+		ArrayList<String> result = new ArrayList<>();
+		ArrayList<Integer> powersOfTwo = new ArrayList<>();
+		powersOfTwo.add(1);
+		powersOfTwo.add(2);
+
+		result.add("*");//place holder for zeroith index
+		result.add("0");//place 1
+		result.add("0");//place 2
+
+		int mostRecentPower = 2;
+		int messageIndex = 0;
+
+		while(messageIndex < message.length()){
+			if(result.size() == mostRecentPower * 2){
+				result.add("0");
+				mostRecentPower = mostRecentPower * 2;
+				powersOfTwo.add(mostRecentPower);
+			} else {
+				result.add( "" + message.charAt(messageIndex) );
+				messageIndex++;
+			}
+		}
+
+		System.out.println();
+		int newNum;
+		int counter;
+		int index;
+
+		for(int i = 1; i < result.size(); i++){
+			if(!powersOfTwo.contains(i)){
+				//compute which powers of two take it into account
+				newNum = i;
+				counter = 0;
+
+				for(int n = 0; newNum > 0; n++){
+					if(newNum % 2 != 0){
+						//xor with parity bit
+						index = powersOfTwo.get(n);
+						String xored = xor(result.get(index) , result.get(i));
+						result.set(index, xored);
+					}
+
+					newNum = newNum / 2;
+				}
+
+			}
+		}
+
+		StringBuilder totalResult = new StringBuilder();
+
+		for(int i = 1; i < result.size(); i++){
+			totalResult.append(result.get(i));
+		}
+
+		return totalResult.toString();
 	}
 
 	private static String receiveHamming(String message){
-		return "";
+		//output: "received message in error" or "correct message"
+		// II:  If a single bit error, show the correct message (and information of which bit was flipped) 
+		ArrayList<Integer> powersOfTwo = new ArrayList<>();
+		powersOfTwo.add(1);
+		powersOfTwo.add(2);
+
+		powersOfTwo.add(4);
+
+		StringBuilder theMessage = new StringBuilder(message);
+
+		int newNum;
+		int index;
+
+		for(int i = 0; i < message.length(); i++){
+
+
+			if( powersOfTwo.get(powersOfTwo.size() - 1) * 2 == i){
+				powersOfTwo.add(i);
+				System.out.println("added a power of two");
+				System.out.println("i: " + i);
+			} else {
+
+				if(theMessage.charAt(i) == '1'){
+
+					newNum = i;
+
+					for(int n = 0; newNum > 0; n++){
+						if(newNum % 2 != 0){
+							index = powersOfTwo.get(n) - 1;
+							String xored = xor("" + theMessage.charAt(index) , "" + theMessage.charAt(i - 1));
+							theMessage.setCharAt(index, xored.charAt(0));
+						}
+
+						newNum = newNum / 2;
+					}
+				}
+
+			}
+
+		}
+
+		boolean foundError = false;
+
+		System.out.println("after xoring everything: " + theMessage.toString());
+
+		for(int i = 0; i < powersOfTwo.size(); i++){
+			if(theMessage.charAt( powersOfTwo.get(i) ) != '0'){
+				foundError = true;
+			}
+		}
+
+		if(foundError){
+			return "found an error";
+		} else {
+			return "didn't find an error";
+		}
+
+		//return "";
 	}
 
 	private static String sendCRC(String message){
@@ -108,14 +230,24 @@ public class Homework1{
 		System.out.print("Enter the generated polynomial: ");
 		String poly = input.next();
 
-		StringBuilder remainder = new StringBuilder (getRemainder(new StringBuilder(message), poly));
+		String remainder = getRemainder(new StringBuilder(message), poly);
 
-		if(remainder.indexOf("1") == -1){
+		if(isZero(remainder)){
 			return "No error detected";
 		} else {
 			return "Error detected.";
 		}
 
+	}
+
+
+	private static boolean isZero(String num){
+		StringBuilder strB = new StringBuilder(num);
+		if(strB.indexOf("1") == -1){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 
@@ -141,7 +273,40 @@ public class Homework1{
 	}
 
 
+	private static String addGroups(String message){
 
+		AddFactory addFactory = new AddFactory();
+
+		for(int i = 0; i < message.length() / 4; i++){
+			addFactory.add(message.substring(i * 4, i * 4 + 4));
+		}
+
+		String overflow;
+		String base;
+		while(addFactory.getNum().length() > 4){
+			overflow = addFactory.getNum().substring(0, addFactory.getNum().length() - 4 );
+			base = addFactory.getNum().substring(addFactory.getNum().length() - 4, addFactory.getNum().length());
+
+			addFactory.setNum(base);
+			addFactory.add(overflow);
+		}
+
+		return addFactory.getNum();
+	}
+
+	private static String flipBits(String str){
+		StringBuilder result = new StringBuilder(str);
+
+		for(int i = 0; i < result.length(); i++){
+			if(result.charAt(i) == '0'){
+				result.setCharAt(i, '1');
+			} else {
+				result.setCharAt(i, '0');
+			}
+		}
+
+		return result.toString();
+	}
 
 
 	//@require: dividend and divisor both start with '1'
@@ -180,6 +345,7 @@ public class Homework1{
 }
 
 
+//----------------------------------------------------------------------------------------
 
 
 class AddFactory{
@@ -229,6 +395,7 @@ class AddFactory{
 					num.setCharAt( num.length() - i, '0');
 				} else {
 					num.setCharAt( num.length() - i, '1');
+					carry = 0;
 				}
 			}
 
@@ -241,23 +408,23 @@ class AddFactory{
 				num = new StringBuilder(newNum);
 			} else if(num.length() > other.length()){
 
-				// :shrug:
 				String newOther = "1";
 				for(int i = 0; i < other.length(); i++){
 					newOther = newOther + "0";
 				}
 
-				System.out.println("things got complicated!!!");
 				this.add(newOther);
 
 			}
 		}
 	}
 
-
-
 	public String getNum(){
 		return num.toString();
+	}
+
+	public void setNum(String num){
+		this.num = new StringBuilder(num);
 	}
 
 
