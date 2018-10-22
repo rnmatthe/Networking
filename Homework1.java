@@ -163,10 +163,11 @@ public class Homework1{
 
 		powersOfTwo.add(4);
 
+		message = "0" + message;
+
 		StringBuilder theMessage = new StringBuilder(message);
 
-		int newNum;
-		int index;
+
 
 		for(int i = 0; i < message.length(); i++){
 
@@ -175,41 +176,50 @@ public class Homework1{
 				powersOfTwo.add(i);
 				System.out.println("added a power of two");
 				System.out.println("i: " + i);
-			} else {
-
-				if(theMessage.charAt(i) == '1'){
-
-					newNum = i;
-
-					for(int n = 0; newNum > 0; n++){
-						if(newNum % 2 != 0){
-							index = powersOfTwo.get(n) - 1;
-							String xored = xor("" + theMessage.charAt(index) , "" + theMessage.charAt(i - 1));
-							theMessage.setCharAt(index, xored.charAt(0));
-						}
-
-						newNum = newNum / 2;
-					}
-				}
-
-			}
+			} 
 
 		}
 
-		boolean foundError = false;
+		
+		
+		int newNum;
+		int index;
 
-		System.out.println("after xoring everything: " + theMessage.toString());
+		for(int i = 1; i < theMessage.length(); i++){
+			if(!powersOfTwo.contains(i)){
+				//compute which powers of two take it into account
+				newNum = i;
+
+				for(int n = 0; newNum > 0; n++){
+					if(newNum % 2 != 0){
+						//xor with parity bit
+						index = powersOfTwo.get(n);
+						String xored = xor("" + theMessage.charAt(index) , "" + theMessage.charAt(i));
+						theMessage.setCharAt(index, xored.charAt(0));
+					}
+
+					newNum = newNum / 2;
+				}
+
+			}
+		}
+
+		boolean foundError = false;
+		ArrayList<Integer> parityBitsInError = new ArrayList<>();
 
 		for(int i = 0; i < powersOfTwo.size(); i++){
 			if(theMessage.charAt( powersOfTwo.get(i) ) != '0'){
 				foundError = true;
+				parityBitsInError.add(i);
+				System.out.println("parity bit in error: " + i);
 			}
 		}
 
 		if(foundError){
-			return "found an error";
+			System.out.println("Received message in error");
+			return "Received message in error";
 		} else {
-			return "didn't find an error";
+			return "Correct message";
 		}
 
 		//return "";
