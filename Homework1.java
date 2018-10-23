@@ -9,7 +9,7 @@ public class Homework1{
 
 	private static int method;
 	private static int choice;
-	private static String message;
+	private static String message = "";
 	private static String result = "";
 
 	public static void main(String[] args){
@@ -27,13 +27,17 @@ public class Homework1{
 			}
 
 			System.out.println("\nWould you like to simulate the sender or receiver?");
-			System.out.println("1) Sender \n2) Receiver");
+			System.out.println("1) Sender \n2) Receiver \n3) Back to main menu");
 
 			choice = input.nextInt();
 
-			System.out.println("\nEnter the binary string.");
+			if(choice == 1 || choice == 2){
+				System.out.println("\nEnter the binary string.");
+				message = input.next();
+			} else {
+				method = 4;
+			}
 
-			message = input.next();
 
 			while(message.length() % 4 != 0 && choice == 1){
 				message = message + "0";
