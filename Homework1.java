@@ -161,25 +161,20 @@ public class Homework1{
 	private static String receiveHamming(String message){
 		//output: "received message in error" or "correct message"
 		// II:  If a single bit error, show the correct message (and information of which bit was flipped) 
+
+		StringBuilder originalMessage = new StringBuilder(message);
 		ArrayList<Integer> powersOfTwo = new ArrayList<>();
 		powersOfTwo.add(1);
 		powersOfTwo.add(2);
-
 		powersOfTwo.add(4);
 
-		message = "0" + message;
-
 		StringBuilder theMessage = new StringBuilder(message);
-
-
 
 		for(int i = 0; i < message.length(); i++){
 
 
-			if( powersOfTwo.get(powersOfTwo.size() - 1) * 2 == i){
-				powersOfTwo.add(i);
-				System.out.println("added a power of two");
-				System.out.println("i: " + i);
+			if( powersOfTwo.get(powersOfTwo.size() - 1) * 2 == i + 1){
+				powersOfTwo.add(i + 1);
 			} 
 
 		}
@@ -190,14 +185,14 @@ public class Homework1{
 		int index;
 
 		for(int i = 1; i < theMessage.length(); i++){
-			if(!powersOfTwo.contains(i)){
+			if(!powersOfTwo.contains(i + 1)){
 				//compute which powers of two take it into account
-				newNum = i;
+				newNum = i + 1;
 
 				for(int n = 0; newNum > 0; n++){
 					if(newNum % 2 != 0){
 						//xor with parity bit
-						index = powersOfTwo.get(n);
+						index = powersOfTwo.get(n) - 1;
 						String xored = xor("" + theMessage.charAt(index) , "" + theMessage.charAt(i));
 						theMessage.setCharAt(index, xored.charAt(0));
 					}
@@ -212,21 +207,44 @@ public class Homework1{
 		ArrayList<Integer> parityBitsInError = new ArrayList<>();
 
 		for(int i = 0; i < powersOfTwo.size(); i++){
-			if(theMessage.charAt( powersOfTwo.get(i) ) != '0'){
+			if(theMessage.charAt( powersOfTwo.get(i) - 1) != '0'){
 				foundError = true;
-				parityBitsInError.add(i);
-				System.out.println("parity bit in error: " + i);
+				parityBitsInError.add( powersOfTwo.get(i) - 1 );
 			}
 		}
 
 		if(foundError){
+
+			int flipIndex;
+
 			System.out.println("Received message in error");
-			return "Received message in error";
+
+			if(parityBitsInError.size() == 1){
+
+				flipIndex = parityBitsInError.get(0);
+				//one parity bit in error - assume that bit was just in error, correct it
+
+				if(originalMessage.charAt(flipIndex) == '0'){
+					originalMessage.setCharAt(flipIndex, '1');
+				} else {
+					originalMessage.setCharAt(flipIndex, '0');
+				}
+
+				System.out.println("correct message: " + originalMessage.toString());
+
+			} else {
+				//more than one parity bit in error
+
+				//if all parity bits have one and only one message bit in common, flip the message bit
+				//must not affect any other bits
+
+
+			}
+
+			return "";
 		} else {
 			return "Correct message";
 		}
-
-		//return "";
 	}
 
 	private static String sendCRC(String message){
