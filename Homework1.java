@@ -89,6 +89,7 @@ public class Homework1{
 	private static String receiveChecksum(String message){
 		
 		String result = addGroups(message);
+		result = flipBits(result);
 
 		if( isZero( flipBits(result) ) ){
 			System.out.println("Received message in error");
@@ -166,7 +167,6 @@ public class Homework1{
 		ArrayList<Integer> powersOfTwo = new ArrayList<>();
 		powersOfTwo.add(1);
 		powersOfTwo.add(2);
-		powersOfTwo.add(4);
 
 		StringBuilder theMessage = new StringBuilder(message);
 
@@ -235,9 +235,50 @@ public class Homework1{
 			} else {
 				//more than one parity bit in error
 
-				//if all parity bits have one and only one message bit in common, flip the message bit
+				//if all parity bits have one message bit in common, flip the message bit
 				//must not affect any other bits
 
+				//all parity bits must affect that bit
+				//no other parity bit must affect that bit
+
+				ArrayList<Integer> effectAll = new ArrayList<>();
+				boolean effectsAll = true;
+
+				for(int i = 1; i <= message.length(); i++){
+
+					effectsAll = true;
+
+					for(int n = 0; n < parityBitsInError.size(); n++){
+						if((i / (parityBitsInError.get(n) + 1)  ) % 2 != 1 ){
+							effectsAll = false;
+						}
+					}
+
+					if(effectsAll){
+						effectAll.add(i);
+					}
+				}
+
+				for(int i = 0; i < effectAll.size(); i++){
+					//see if this affects other parity bits
+					for(int n = 0; n < powersOfTwo.size(); n++){
+						if(!parityBitsInError.contains(powersOfTwo.get(n) - 1) && effectAll.get(i) / powersOfTwo.get(n) % 2 == 1){
+							effectAll.remove(effectAll.get(i));
+						}
+					}
+				}
+
+				if(effectAll.size() == 1){
+					//flip just that message bit
+					if(originalMessage.charAt(effectAll.get(0) - 1) == '0'){
+						originalMessage.setCharAt(effectAll.get(0) - 1, '1');
+					} else {
+						originalMessage.setCharAt(effectAll.get(0) - 1, '0');
+					}
+
+					System.out.println("Correct message: " + originalMessage.toString());
+					System.out.println("bit in error: " + effectAll.get(0));
+				}
 
 			}
 
@@ -346,7 +387,7 @@ public class Homework1{
 
 		if(divisor.length() > dividend.length()){
 			System.out.println("tried to divide bigger number into smaller number");
-			return dividend.toString();
+			return "1";
 		}
 
 		int xorHere = 0;
